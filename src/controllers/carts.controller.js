@@ -1,193 +1,224 @@
 import {
-  cartService,
-  productService,
-  orderService,
-} from "../repositories/index.js";
-import { logger } from "../utils/logger.js";
+	cartService,
+	productService,
+	orderService,
+	userService,
+} from '../repositories/index.js';
+import { logger } from '../utils/logger.js';
 
 class CartController {
-  constructor() {
-    this.cartService = cartService;
-    this.productService = productService;
-    this.orderService = orderService;
-  }
+	constructor() {
+		this.userService = userService;
+		this.cartService = cartService;
+		this.productService = productService;
+		this.orderService = orderService;
+	}
 
-  async createCart(req, res) {
-    try {
-      const { products } = req.body;
-      const newCart = await this.cartService.create({ products });
+	async createCart(req, res) {
+		try {
+			const { products } = req.body;
+			const newCart = await this.cartService.create({ products });
 
-      res.status(201).json({
-        status: "success",
-        message: 'Carrito agregado exitosamente "vacio"',
-        cart: newCart,
-      });
-    } catch (error) {
-      logger.error(error);
-      res.status(500).json({
-        status: "error",
-        message: "Error interno del servidor",
-      });
-    }
-  }
+			res.status(201).json({
+				status: 'success',
+				message: 'Carrito agregado exitosamente "vacio"',
+				cart: newCart,
+			});
+		} catch (error) {
+			logger.error(error);
+			res.status(500).json({
+				status: 'error',
+				message: 'Error interno del servidor',
+			});
+		}
+	}
 
-  async add(req, res) {
-    try {
-      const { pid, quantity } = req.body;
-      const cid = req.user.cart;
+	async add(req, res) {
+		try {
+			const { pid, quantity } = req.body;
+			const cid = req.user.cart;
 
-      const cart = await this.cartService.addProduct(cid, pid, quantity);
-      res.status(200).json({
-        status: "success",
-        message: "Producto agregado al carrito exitosamente",
-        cart,
-      });
-    } catch (error) {
-      logger.error(error);
-      res.status(500).json({
-        status: "error",
-        message: "Error interno del servidor al agregar el producto al carrito",
-      });
-    }
-  }
+			// Obtener información del usuario desde el token de autenticación
+			const  id  = req.user.id;
+			console.log('user', req.user.id);
 
-  async getCart(req, res) {
-    try {
-      const cid = req.user.cart;
-      const cart = await this.cartService.getById(cid);
+			// Verificar si el usuario es premium y obtener su email
+			const user = await this.userService.getBy({ id: userId });
+			console.log('paso', user);
+			if (!user) {
+				return res
+					.status(404)
+					.json({ status: 'error', message: 'Usuario no encontrado.' });
+			}
+			// Obtener información del producto
+			const product = await this.productService.getUserById(pid);
+			if (!product) {
+				return res
+					.status(404)
+					.json({ status: 'error', message: 'Producto no encontrado.' });
+			}
 
-      if (!cart) {
-        return res.status(404).json({
-          status: "error",
-          message: "El carrito especificado no existe",
-        });
-      }
+			// Verificar si el usuario es premium y si el producto le pertenece
+			if (user.role === 'premium' && product.owner === user.email) {
+				return res.status(400).json({
+					status: 'error',
+					message: 'No puedes agregar tu propio producto al carrito.',
+				});
+			}
 
-      res.render("cart", {
-        cid,
-        cart,
-        style: "index.css",
-      });
-    } catch (error) {
-      logger.error(error);
-      res.status(500).json({
-        status: "error",
-        message: "Error interno del servidor",
-      });
-    }
-  }
+			// Agregar el producto al carrito
+			const cart = await this.cartService.addProduct(cid, pid, quantity);
+			return res.status(200).json({
+				status: 'success',
+				message: 'Producto agregado al carrito exitosamente',
+				cart,
+			});
+		} catch (error) {
+			logger.error(error);
+			return res.status(500).json({
+				status: 'error',
+				message: 'Error interno del servidor al agregar el producto al carrito',
+			});
+		}
+	}
 
-  async update(req, res) {
-    try {
-      const { pid } = req.params;
-      const { quantity } = req.body;
-      const cid = req.user.cart;
+	async getCart(req, res) {
+		try {
+			const cid = req.user.cart;
+			const cart = await this.cartService.getById(cid);
 
-      const updatedCart = await this.cartService.update(cid, pid, quantity);
+			if (!cart) {
+				return res.status(404).json({
+					status: 'error',
+					message: 'El carrito especificado no existe',
+				});
+			}
 
-      res.status(200).json({
-        status: "success",
-        message: "Cantidad del producto actualizada exitosamente",
-        updatedCart,
-      });
-    } catch (error) {
-      logger.error(error);
-      res.status(500).json({
-        status: "error",
-        message:
-          "Error interno del servidor al actualizar la cantidad del producto en el carrito",
-      });
-    }
-  }
+			res.render('cart', {
+				cid,
+				cart,
+				style: 'index.css',
+			});
+		} catch (error) {
+			logger.error(error);
+			res.status(500).json({
+				status: 'error',
+				message: 'Error interno del servidor',
+			});
+		}
+	}
 
-  async purchase(req, res) {
-    const cid = req.user.cart;
-    let total = 0;
-    const buyedProducts = [];
-    const nonStock = [];
+	async update(req, res) {
+		try {
+			const { pid } = req.params;
+			const { quantity } = req.body;
+			const cid = req.user.cart;
 
-    try {
-      const cart = await this.cartService.getById(cid);
+			const updatedCart = await this.cartService.update(cid, pid, quantity);
 
-      if (!cart) {
-        return res
-          .status(404)
-          .json({ status: "error", message: "Carrito no encontrado" });
-      }
+			res.status(200).json({
+				status: 'success',
+				message: 'Cantidad del producto actualizada exitosamente',
+				updatedCart,
+			});
+		} catch (error) {
+			logger.error(error);
+			res.status(500).json({
+				status: 'error',
+				message:
+					'Error interno del servidor al actualizar la cantidad del producto en el carrito',
+			});
+		}
+	}
 
-      // Verificar el stock
-      for (const item of cart.products) {
-        const pid = item.product._id;
-        const quantity = item.quantity;
-        // Obtener la información de stock
-        const stockInfo = await this.productService.getById(pid);
-        const stock = stockInfo.stock;
+	async purchase(req, res) {
+		const cid = req.user.cart;
+		let total = 0;
+		const buyedProducts = [];
+		const nonStock = [];
 
-        if (quantity > stock) {
-          nonStock.push({ productId: pid, quantity });
-        } else {
-          const newStock = stock - quantity;
-          await this.productService.updateProductStock(pid, newStock);
-          // Agregar el ID del producto a la lista de productos comprados
-          buyedProducts.push({ product: pid, quantity });
-          //Calcular el total
-          const productPrice = stockInfo.price;
-          total += productPrice * quantity;
-        }
-      }
+		try {
+			const cart = await this.cartService.getById(cid);
 
-      // Actualizar el carrito con los productos restantes
-      const remainingProducts = cart.products.filter(
-        (item) => !buyedProducts.some((bp) => bp.product === item.product._id)
-      );
+			if (!cart) {
+				return res
+					.status(404)
+					.json({ status: 'error', message: 'Carrito no encontrado' });
+			}
 
-      await this.cartService.updateCart(cid, remainingProducts);
+			// Verificar el stock
+			for (const item of cart.products) {
+				const pid = item.product._id;
+				const quantity = item.quantity;
+				// Obtener la información de stock
+				const stockInfo = await this.productService.getById(pid);
+				const stock = stockInfo.stock;
 
-      const ticketData = {
-        purchaser: req.user.first_name,
-        products: buyedProducts,
-        total: total.toFixed(2),
-        date: new Date(),
-      };
+				if (quantity > stock) {
+					nonStock.push({ productId: pid, quantity });
+				} else {
+					const newStock = stock - quantity;
+					await this.productService.updateProductStock(pid, newStock);
+					// Agregar el ID del producto a la lista de productos comprados
+					buyedProducts.push({ product: pid, quantity });
+					//Calcular el total
+					const productPrice = stockInfo.price;
+					total += productPrice * quantity;
+				}
+			}
 
-      const order = await this.orderService.createOrder(ticketData);
+			// Actualizar el carrito con los productos restantes
+			const remainingProducts = cart.products.filter(
+				(item) => !buyedProducts.some((bp) => bp.product === item.product._id)
+			);
 
-      return res.status(200).json({
-        status: "success",
-        message: "Compra completada exitosamente",
-        order,
-        nonStock,
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({
-        status: "error",
-        message: "Error interno del servidor al procesar la compra",
-      });
-    }
-  }
+			await this.cartService.updateCart(cid, remainingProducts);
 
-  async removeFromCart(req, res) {
-    const { pid } = req.params;
-    const cid = req.user.cart;
+			const ticketData = {
+				purchaser: req.user.first_name,
+				products: buyedProducts,
+				total: total.toFixed(2),
+				date: new Date(),
+			};
 
-    try {
-      await this.cartService.deleteProduct(cid, pid);
-      res.json({ message: "Producto eliminado del carrito correctamente" });
-    } catch (error) {
-      logger.error(error);
-    }
-  }
+			const order = await this.orderService.createOrder(ticketData);
 
-  async removeAllFromCart(req, res) {
-    const cid = req.user.cart;
-    try {
-      await this.cartService.deleteAll(cid);
-      res.json({ message: "Carrito vaciado correctamente" });
-    } catch (error) {
-      logger.error(error);
-    }
-  }
+			return res.status(200).json({
+				status: 'success',
+				message: 'Compra completada exitosamente',
+				order,
+				nonStock,
+			});
+		} catch (error) {
+			console.error(error);
+			res.status(500).json({
+				status: 'error',
+				message: 'Error interno del servidor al procesar la compra',
+			});
+		}
+	}
+
+	async removeFromCart(req, res) {
+		const { pid } = req.params;
+		const cid = req.user.cart;
+
+		try {
+			await this.cartService.deleteProduct(cid, pid);
+			res.json({ message: 'Producto eliminado del carrito correctamente' });
+		} catch (error) {
+			logger.error(error);
+		}
+	}
+
+	async removeAllFromCart(req, res) {
+		const cid = req.user.cart;
+		try {
+			await this.cartService.deleteAll(cid);
+			res.json({ message: 'Carrito vaciado correctamente' });
+		} catch (error) {
+			logger.error(error);
+		}
+	}
 }
 
 export default CartController;

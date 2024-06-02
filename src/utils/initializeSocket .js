@@ -6,7 +6,6 @@ export function initializeSocket(httpServer) {
   const io = new Server(httpServer);
 
   io.on("connection", (socket) => {
-
     // Enviar la lista de productos al cliente cuando se conecta
     socket.on("requestProductsList", async () => {
       try {
@@ -30,18 +29,18 @@ export function initializeSocket(httpServer) {
           stock,
           status,
           category,
-          userEmail
+          userEmail,
         } = productData;
-    
+
         // Determinar si el usuario es premium
-        const user = await userService.getUser(userEmail);
-        let owner
+        const user = await userService.getUser({ email: userEmail });
+        let owner;
         if (user.role === "premium") {
-           owner = user.email
+          owner = user.email;
         } else {
-           owner = "admin"
+          owner = "admin";
         }
-    
+
         // Crear el producto con el propietario asignado
         const product = await productService.createProduct({
           title,
@@ -52,9 +51,9 @@ export function initializeSocket(httpServer) {
           stock: parseInt(stock),
           status,
           category,
-          owner, 
+          owner,
         });
-    
+
         // Emitir el evento para informar a todos los clientes sobre el nuevo producto
         const productList = await productService.getProducts({});
         io.emit("productAdded", { product, productList });
@@ -65,23 +64,24 @@ export function initializeSocket(httpServer) {
     });
 
     // Manejo de eliminación de productos
-    socket.on("deleteProduct", async ({ pid, userRole, userEmail }) => {
+    socket.on("deleteProduct", async ({ pid, userEmail }) => {
       try {
-        const user = await userService.getUser(userEmail);
-        console.log("user", user);
-        // let userRole = user.role;
-        
-       const product = await productService.getById(pid);
+        const user = await userService.getUser({ email: userEmail });
+
+        const product = await productService.getById(pid);
+
         if (!product) {
           socket.emit("errorMessage", "Producto no encontrado");
           return;
         }
-        if (userRole === "admin" || (userRole === "premium" && product.owner === userEmail)) {
+
+        if (user.role === "admin" || (user.role === "premium" && product.owner === userEmail)) {
           await productService.deleteProduct({ _id: pid });
           const productList = await productService.getProducts({});
           io.emit("productsList", productList); // Actualizar la lista de productos después de eliminar
+          socket.emit("deleteProductSuccess");
         } else {
-          socket.emit("errorMessage", "No tienes permiso para eliminar este producto");
+          socket.emit("deleteProductError");
         }
       } catch (error) {
         console.error("Error al eliminar producto:", error);

@@ -7,7 +7,7 @@ import { logger } from '../utils/logger.js';
 class ProductController {
 	constructor() {
 		this.service = productService;
-    this.userService = userService
+		this.userService = userService;
 	}
 
 	getProducts = async (req, res) => {
@@ -118,9 +118,7 @@ class ProductController {
 			if (req.user && req.user.role === 'premium') {
 				owner = req.user._id; // Asigna el ObjectId del usuario premium
 			} else {
-				owner = "adminP"
-			
-        console.log('user', req.user.role)
+				owner = 'admin';
 			}
 
 			const newProduct = {
