@@ -18,23 +18,30 @@
   </head>
   <body>
     {{#unless hideHeader}}
-      <header>
+  <header>
+    <div>
+      <div class="button-container">
         <div>
-          <div class="button-container">
-            <div>
-              <h1>Bienvenido, {{username}}!</h1>
-              <h3>Tu rol: {{role}}</h3>
-            </div>
+          <h1>Bienvenido, {{username}}!</h1>
+          <h3>Tu rol: {{role}}</h3>
+        </div>
+        {{#eq role 'admin'}}
+          <a href="/realtimeproducts" class="button - btnMin">Real-Time Products</a>
+          <a href="/changerole" class="button - btnMin">Change Role</a>
+        {{else}}
+          {{#eq role 'premium'}}
             <a href="/cart" class="button - btnMin">
               <i class="fas fa-shopping-cart cart-icon"></i>
             </a>
-            <a href="/chat" class="button - btnMin chat-button">Chat</a>
-            <a href="/products" class="button - btnMin">Volver a Productos</a>
-            <a href="/api/sessions/logout" class="button - btnMin">Logout</a>
-          </div>
-        </div>
-      </header>
-    {{/unless}}
+          {{/eq}}
+        {{/eq}}
+        <a href="/chat" class="button - btnMin chat-button">Chat</a>
+        <a href="/products" class="button - btnMin">Productos</a>
+        <a href="/api/sessions/logout" class="button - btnMin">Logout</a>
+      </div>
+    </div>
+  </header>
+{{/unless}}
 
     {{{body}}}
 

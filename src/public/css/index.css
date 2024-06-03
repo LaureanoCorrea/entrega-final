@@ -310,6 +310,15 @@ li {
   background-color: #0056b3;
 }
 
+#form_add{
+  margin: 20px auto;
+    padding: 20px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
 /* Link and Button Styles */
 a {
   display: block;
@@ -521,3 +530,50 @@ a.button:hover {
 .ticket-total {
   font-weight: bold;
 }
+
+  /* Estilos para el formulario */
+  #changeRoleForm {
+    margin: 20px auto;
+    padding: 20px;
+    width: 300px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+  }
+
+  /* Estilos para las etiquetas */
+  label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+
+  /* Estilos para los selectores */
+  select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    background-color: #fff;
+    font-size: 16px;
+  }
+
+  /* Estilos para el botón */
+  button[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  /* Estilos para las alertas de SweetAlert */
+  .swal2-popup {
+    font-size: 16px;
+  }
+

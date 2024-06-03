@@ -17,12 +17,14 @@ class ViewController {
 
 	login = (req, res) => {
 		res.render('login', {
+			hideHeader: true,
 			style: 'index.css',
 		});
 	};
 
 	register = (req, res) => {
 		res.render('register', {
+			hideHeader: true,
 			style: 'index.css',
 		});
 	};
@@ -161,29 +163,6 @@ class ViewController {
 		}
 	};
 
-	productAdded = async (req, res) => {
-		try {
-			const { pid } = req.params;
-			const product = await productService.getById(pid);
-
-			const username = req.user.first_name;
-			const role = req.user.role;
-
-			res.render('product-added', {
-				username,
-				role,
-				product,
-				style: 'index.css',
-			});
-		} catch (error) {
-			logger.error(error);
-			res.status(500).json({
-				status: 'error',
-				message: 'Error interno del servidor',
-			});
-		}
-	};
-
 	current = async (req, res) => {
 		try {
 			const { first_name, last_name } = req.user;
@@ -241,6 +220,24 @@ class ViewController {
 
 	expiredResetLink = (req, res) => {
 		res.render('expiredResetLink');
+	};
+
+	changeRole = async (req, res) => {
+		try {
+			const users = await this.userService.getUsers();
+			const usersPlain = users.map(user => user.toObject ? user.toObject() : user); // Convertir a objetos planos si es necesario
+			const username = req.user.first_name;
+			const role = req.user.role;
+			res.render('changeRole', {
+				users: usersPlain,
+				username,
+				role,
+				style: 'index.css',
+			});
+		} catch (error) {
+			logger.error(error);
+			res.status(500).send('Error interno del servidor');
+		}
 	};
 
 	loggerTest = (req, res) => {

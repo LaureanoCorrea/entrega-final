@@ -1,0 +1,53 @@
+<h1>Cambiar Rol de Usuario</h1>
+  <form id="changeRoleForm">
+    <label for="userId">Seleccionar Usuario:</label>
+    <select id="userId" name="userId" required>
+      {{#each users}}
+        <option value="{{this._id}}">{{this.email}}</option>
+      {{/each}}
+    </select>
+    
+    <label for="role">Nuevo Rol:</label>
+    <select id="role" name="role" required>
+      <option value="user">Usuario</option>
+      <option value="premium">Premium</option>
+    </select>
+    
+    <button type="submit">Cambiar Rol</button>
+  </form>
+
+  <script>
+    document.getElementById('changeRoleForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const userId = document.getElementById('userId').value;
+      const role = document.getElementById('role').value;
+      
+      try {
+        const response = await fetch(`/api/users/premium/${userId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ role })
+        });
+        
+        if (response.ok) {
+           Swal.fire({
+              icon: 'success',
+              title: 'Perfecto!',
+              text: 'Has cambiado el rol del usuario.'
+            });
+        } else {
+          const data = await response.json();
+           Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: `Error: ${data.message}`
+            });
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error interno del servidor');
+      }
+    });
+  </script>

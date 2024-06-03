@@ -5,6 +5,7 @@ import morganLogger from "morgan";
 import appRouter from "./routes/index.js";
 import cors from "cors";
 import handlebars from "express-handlebars";
+import Handlebars from "handlebars"
 import __dirname, { uploader } from "./utils.js";
 import viewsRouter from "./routes/views.router.js";
 import { initializeSocket } from "./utils/initializeSocket .js";
@@ -33,6 +34,10 @@ initializePassport();
 app.use(passport.initialize());
 app.use(addLogger);
 
+
+Handlebars.registerHelper('eq', function (a, b, options) {
+  return a === b ? options.fn(this) : options.inverse(this);
+});
 app.engine("handlebars", handlebars.engine());
 app.set("views", path.join(__dirname, "/views"));
 app.set("view engine", "handlebars");
