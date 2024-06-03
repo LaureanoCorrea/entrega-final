@@ -30,34 +30,57 @@
     </table>
   </div>
 
-<script>
-  function add(pid, quantity) { 
-  fetch('/api/carts/add', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      pid: pid,
-      quantity: quantity
-    })
-  })
-  .then(response => {
-    if (response.ok) {
-      return response.json();
-    }
-    throw new Error('Error al agregar producto al carrito');
-  })
-  .then(data => {
-    {{!-- logger.info('Producto agregado al carrito:', data); --}}
-    // Redireccionar a la página de product-added
-    window.location.href = '/product-added/' + pid;
-  })
-  .catch(error => {
-    logger.error('Error:', error);
-  });
-}
+ <script>
+      async function add(pid, quantity) {
+        try {
+          const response = await fetch('/api/carts/add', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ pid, quantity })
+          });
 
-</script>
+          const data = await response.json();
+
+          if (response.ok) {
+            Swal.fire({
+              icon: 'success',
+              title: 'Éxito',
+              text: 'Producto agregado al carrito exitosamente',
+              showCancelButton: true,
+              confirmButtonText: 'Ir al carrito',
+              cancelButtonText: 'Seguir comprando',
+              reverseButtons: true
+            }).then((result) => {
+              if (result.isConfirmed) {
+                window.location.href = '/cart'; // Redirige al carrito
+              } else if (result.dismiss === Swal.DismissReason.cancel) {
+                window.location.href = '/products'; // Redirige a la página de productos
+              }
+            });
+          } else if (response.status === 400 && data.message === 'No puedes agregar tu propio producto al carrito.') {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'No puedes agregar tu propio producto al carrito.'
+            });
+          } else {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: 'Ocurrió un error al agregar el producto al carrito.'
+            });
+          }
+        } catch (error) {
+          console.error(error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Error interno del servidor al agregar el producto al carrito'
+          });
+        }
+      }
+    </script>
 
 </main>

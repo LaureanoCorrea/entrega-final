@@ -35,7 +35,7 @@ class CartRepository {
     }
   };
 
-  async updateCart(cartId, remainingProducts) {
+  updateCart = async (cartId, remainingProducts) => {
     try {
       return await this.dao.updateCart(cartId, remainingProducts);
     } catch (error) {

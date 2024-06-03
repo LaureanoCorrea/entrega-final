@@ -165,4 +165,21 @@ document.addEventListener('DOMContentLoaded', function () {
 			userEmail = result.value;
 		}
 	});
+
+	calcularSubtotal();
+  document
+    .getElementById("vaciar_carrito_btn")
+    .addEventListener("click", vaciarCarrito);
+  document
+    .getElementById("comprar_btn")
+    .addEventListener("click", terminarCompra);
+
+  // Configurar la actualización de cantidad de productos en el carrito
+  const quantityInputs = document.querySelectorAll(".product_quantity");
+  quantityInputs.forEach((input) => {
+    input.addEventListener("input", function () {
+      actualizarCantidadProducto(input.dataset.productId, input.textContent);
+      calcularSubtotal();
+    });
+  });
 });

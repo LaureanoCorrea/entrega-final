@@ -18,7 +18,7 @@ class CartDaoMongo {
   }
 
   async add(cid, pid, quantity) {
-    const cart = await this.getById(cid);
+    const cart = await this.cartsModel.findById(cid);
     const existingProduct = cart.products.find(item => item.product.equals(pid));
     existingProduct 
       ? existingProduct.quantity += quantity

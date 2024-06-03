@@ -37,28 +37,22 @@ class CartController {
 		try {
 			const { pid, quantity } = req.body;
 			const cid = req.user.cart;
+			const userId = req.user.id;
 
-			// Obtener información del usuario desde el token de autenticación
-			const  id  = req.user.id;
-			console.log('user', req.user.id);
-
-			// Verificar si el usuario es premium y obtener su email
-			const user = await this.userService.getBy({ id: userId });
-			console.log('paso', user);
+			const user = await this.userService.getUserById(userId);
 			if (!user) {
 				return res
 					.status(404)
 					.json({ status: 'error', message: 'Usuario no encontrado.' });
 			}
-			// Obtener información del producto
-			const product = await this.productService.getUserById(pid);
+
+			const product = await this.productService.getById(pid);
 			if (!product) {
 				return res
 					.status(404)
 					.json({ status: 'error', message: 'Producto no encontrado.' });
 			}
 
-			// Verificar si el usuario es premium y si el producto le pertenece
 			if (user.role === 'premium' && product.owner === user.email) {
 				return res.status(400).json({
 					status: 'error',
@@ -66,16 +60,15 @@ class CartController {
 				});
 			}
 
-			// Agregar el producto al carrito
 			const cart = await this.cartService.addProduct(cid, pid, quantity);
-			return res.status(200).json({
+			res.status(200).json({
 				status: 'success',
 				message: 'Producto agregado al carrito exitosamente',
 				cart,
 			});
 		} catch (error) {
-			logger.error(error);
-			return res.status(500).json({
+			console.error(error);
+			res.status(500).json({
 				status: 'error',
 				message: 'Error interno del servidor al agregar el producto al carrito',
 			});
