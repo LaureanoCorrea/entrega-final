@@ -1,69 +1,30 @@
-import { Router } from "express";
-import messagesModel from "../dao/Mongo/models/messages.model.js";
-import { logger } from "../utils/logger.js";
+import { Router } from 'express';
+import { passportCall } from '../middleware/passportCall.js';
+import MessageController from '../controllers/messages.controler.js';
+import authorization from '../middleware/authentication.middleware.js';
 
 const messagesRouter = Router();
+const messageController = new MessageController();
 
-messagesRouter.get("/", async (req, res) => {
-  try {
-    const messages = await messagesModel.find({});
-    res.status(200).send({
-      status: "success",
-      message: "Colección de mensajes",
-      result: messages,
-    });
-  } catch (error) {
-    logger.error(error);
-    return error;
-  }
-});
+messagesRouter.get(
+	'/',
+	passportCall(['jwt']),
+	authorization(['user']),
+	messageController.getAllMessages
+);
 
-messagesRouter.post("/", async (req, res) => {
-  try {
-    const { user, message } = req.body;
-    const newMessage = {
-      user,
-      message,
-    };
-    const messages = await messagesModel.create(newMessage);
+messagesRouter.post(
+	'/',
+	passportCall(['jwt']),
+	authorization(['user']),
+	messageController.createMessage
+);
 
-    res.status(200).send({
-      status: "success",
-      message: "Colección de mensajes agregada con éxito",
-      result: messages,
-    });
-  } catch (error) {
-    logger.error(error);
-    return error;
-  }
-});
-
-messagesRouter.put("/:mid", async (req, res) => {
-  try {
-    const { mid } = req.params;
-    const newMessageData = req.body;
-
-    const originalMessage = await messagesModel.findById(mid);
-    let newMessage;
-    try {
-      newMessage = JSON.parse(newMessageData.message);
-    } catch (error) {
-      newMessage = newMessageData.message;
-    }
-
-    originalMessage.message += "\n" + newMessage;
-
-    const result = await originalMessage.save();
-
-    res.status(200).send({
-      status: "success",
-      message: `Chat de usuario ${result.user} actualizado`,
-      result: result,
-    });
-  } catch (error) {
-    logger.error(error);
-    return error;
-  }
-});
+messagesRouter.put(
+	'/:mid',
+	passportCall(['jwt']),
+	authorization(['user']),
+	messageController.appendToMessage
+);
 
 export default messagesRouter;

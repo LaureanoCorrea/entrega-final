@@ -4,6 +4,7 @@ let UserDao;
 let ProductDao;
 let CartsDao;
 let OdersDao;
+let MessagesDao
 
 switch (configObject.persistence) {
   case "FILE":
@@ -28,11 +29,14 @@ switch (configObject.persistence) {
     CartsDao = CartDaoMongo;
     
     const OrdersDaoMongo = (await import("./Mongo/ordersDaoMongo.js")).default;
-    OdersDao = OrdersDaoMongo;    
+    OdersDao = OrdersDaoMongo;  
+    
+    const MessageDaoMongo = (await import("./Mongo/messageDaoMongo.js")).default;
+    MessagesDao = MessageDaoMongo;
     break;
 
 
 
 }
 
-export { UserDao, ProductDao, CartsDao, OdersDao };
+export { UserDao, ProductDao, CartsDao, OdersDao, MessagesDao };

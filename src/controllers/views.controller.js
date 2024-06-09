@@ -104,7 +104,11 @@ class ViewController {
 	};
 
 	chat = (req, res) => {
+		const username = req.user.first_name
+		const role = req.user.role
 		res.render('chat', {
+			username,
+			role,
 			style: 'index.css',
 		});
 	};
