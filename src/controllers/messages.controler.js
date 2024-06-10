@@ -26,7 +26,6 @@ class MessageController {
     async getMessagesByUser(req, res) {
         try {
             const { email } = req.params;
-            console.log('email', req.params)
             const messages = await this.messageService.getMessagesByUser(email);
             res.status(200).json({
                 status: 'success',
@@ -55,7 +54,6 @@ class MessageController {
                 message: 'Mensasje creada exitosamente',
                 createdMessage
             });
-            console.log('mensaje enviado')
         } catch (error) {
             logger.error(error);
             res.status(500).json({

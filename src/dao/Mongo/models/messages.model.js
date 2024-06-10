@@ -12,8 +12,9 @@ const messageSchema = new Schema({
 	messages: {
 		type: [String],
 		required: true,
-        default: []
+		default: [],
 	},
+	isActive: { type: Boolean, default: true },
 });
 
 const messageModel = model(messagesCollection, messageSchema);

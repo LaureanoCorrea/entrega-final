@@ -22,8 +22,9 @@ class ProductController {
 			if (sort === 'asc' || sort === 'desc') {
 				options.sort = { price: sort === 'asc' ? 1 : -1 };
 			}
+			const filter = query ? { $text: { $search: query } } : {};
 
-			const products = await this.service.getProducts({}, options);
+			const products = await this.service.getProducts(filter, options);
 
 			const response = {
 				status: 'success',
@@ -116,7 +117,7 @@ class ProductController {
 
 			let owner;
 			if (req.user && req.user.role === 'premium') {
-				owner = req.user._id; // Asigna el ObjectId del usuario premium
+				owner = req.user._id; 
 			} else {
 				owner = 'admin';
 			}

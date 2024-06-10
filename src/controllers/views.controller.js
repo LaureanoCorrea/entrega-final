@@ -53,15 +53,20 @@ class ViewController {
 
 		try {
 			const options = {
-				limit,
-				page,
-				sort: sort || {},
-				query,
+				limit: parseInt(limit, 10),
+				page: parseInt(page, 10),
+				sort: sort ? { [sort]: 1 } : {},
 				lean: true,
 			};
 
+			const filter = {};
+			if (query) {
+				filter.$text = { $search: query };
+			}
+			filter.isActive = true;
+
 			const cid = req.user.cart;
-			const cart = await cartService.getById(cid);
+			const cart = await this.cartService.getById(cid, true);
 
 			const {
 				docs,
@@ -70,7 +75,7 @@ class ViewController {
 				prevPage,
 				nextPage,
 				page: currentPage,
-			} = await productService.getProducts({}, options);
+			} = await this.productService.getProducts(filter, options);
 
 			const user = req.user;
 			const username = req.user.first_name;
@@ -94,7 +99,7 @@ class ViewController {
 				prevPage,
 				nextPage,
 				page: currentPage,
-				userId: req.user.id,
+				userId: req.user._id,
 				style: 'index.css',
 			});
 		} catch (error) {
@@ -104,8 +109,8 @@ class ViewController {
 	};
 
 	chat = (req, res) => {
-		const username = req.user.first_name
-		const role = req.user.role
+		const username = req.user.first_name;
+		const role = req.user.role;
 		res.render('chat', {
 			username,
 			role,
@@ -229,7 +234,9 @@ class ViewController {
 	changeRole = async (req, res) => {
 		try {
 			const users = await this.userService.getUsers();
-			const usersPlain = users.map(user => user.toObject ? user.toObject() : user); // Convertir a objetos planos si es necesario
+			const usersPlain = users.map((user) =>
+				user.toObject ? user.toObject() : user
+			); // Convertir a objetos planos si es necesario
 			const username = req.user.first_name;
 			const role = req.user.role;
 			res.render('changeRole', {

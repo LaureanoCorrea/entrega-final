@@ -21,32 +21,35 @@
 			<header>
 				<div>
 					<div class='button-container'>
-						<div>
-							<h1>Bienvenido, {{username}}!</h1>
-							<h3>Tu rol: {{role}}</h3>
-						</div>
-						{{#eq role 'admin'}}
-							<a href='/realtimeproducts' class='button - btnMin'>Real-Time
-								Products</a>
-							<a href='/changerole' class='button - btnMin'>Change Role</a>
-						{{else}}
-							{{#eq role 'premium'}}
-								<a href='/cart' class='button - btnMin'>
-									<i class='fas fa-shopping-cart cart-icon'></i>
-								</a>
-								<a href='/products' class='button - btnMin'>Productos</a>
+						<div class='pannel'>
+
+							<div>
+								<h1>Bienvenido, {{username}}!</h1>
+								<h3>Tu rol: {{role}}</h3>
+							</div>
+							{{#eq role 'admin'}}
 								<a href='/realtimeproducts' class='button - btnMin'>Real-Time
 									Products</a>
+								<a href='/changerole' class='button - btnMin'>Change Role</a>
 							{{else}}
-								<a href='/chat' class='button - btnMin chat-button'>Chat</a>
-								<a href='/products' class='button - btnMin'>Productos</a>
-								<a href='/cart' class='button - btnMin'>
-									<i class='fas fa-shopping-cart cart-icon'></i>
-								</a>
+								{{#eq role 'premium'}}
+									<a href='/cart' class='button - btnMin'>
+										<i class='fas fa-shopping-cart cart-icon'></i>
+									</a>
+									<a href='/products' class='button - btnMin'>Productos</a>
+									<a href='/realtimeproducts' class='button - btnMin'>Real-Time
+										Products</a>
+								{{else}}
+									<a href='/chat' class='button - btnMin chat-button'>Chat</a>
+									<a href='/products' class='button - btnMin'>Productos</a>
+									<a href='/cart' class='button - btnMin'>
+										<i class='fas fa-shopping-cart cart-icon'></i>
+									</a>
+								{{/eq}}
 							{{/eq}}
-						{{/eq}}
-						<a href='/api/sessions/logout' class='button - btnMin'>Logout</a>
+							<a href='/api/sessions/logout' class='button - btnMin'>Logout</a>
 
+						</div>
 					</div>
 				</div>
 			</header>

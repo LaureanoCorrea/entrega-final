@@ -52,7 +52,6 @@ class SessionsController {
         return res.status(400).send({ status: "error", error: "Faltan Datos" });
 
       const user = await this.userService.getUser({ email });
-      logger.info("user", user);
 
       if (!user)
         return res

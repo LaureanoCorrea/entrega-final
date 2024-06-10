@@ -52,7 +52,7 @@ header {
 
 .cart-icon,
 .button .cart-icon {
-	font-size: 24px;
+	font-size: 18px;
 	color: white;
 }
 
@@ -161,8 +161,10 @@ li {
 
 /* Pagination Button Styles */
 .button-container {
-	text-align: center;
-	padding: 15px;
+	display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
 }
 
 .button {

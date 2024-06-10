@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			let thumbnail = document.getElementById('thumbnail').value;
 			let code = document.getElementById('code').value;
 			let stock = document.getElementById('stock').value;
-			let status = document.getElementById('status').value;
+			let status = document.getElementById('isActive').value;
 			let category = document.getElementById('category').value;
 
 			if (
@@ -109,16 +109,18 @@ document.addEventListener('DOMContentLoaded', function () {
 			tbody.innerHTML = '';
 
 			products.docs.forEach((product) => {
-				const row = document.createElement('tr');
-				row.id = `product_${product._id}`;
-				row.innerHTML = `
-					<td>${product.title}</td>
-					<td>${product.description}</td>
-					<td>$${product.price}</td>
-					<td>${product.code}</td>
-					<td><button type="button" class="delete_button" onclick="deleteProduct('${product._id}')">X</button></td>
-				`;
-				tbody.appendChild(row);
+				if (product.isActive) {
+					const row = document.createElement('tr');
+					row.id = `product_${product._id}`;
+					row.innerHTML = `
+		<td>${product.title}</td>
+		<td>${product.description}</td>
+		<td>$${product.price}</td>
+		<td>${product.code}</td>
+		<td><button type="button" class="delete_button" onclick="deleteProduct('${product._id}')">X</button></td>
+		`;
+					tbody.appendChild(row);
+				}
 			});
 		}
 

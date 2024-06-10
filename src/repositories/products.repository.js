@@ -7,9 +7,9 @@ class ProductRepository {
     try {
       const result = await this.dao.get(filter, options);
       return result;
-    } catch (error) {
-      throw new Error(`Error encontrando Productos: ${error.message}`);
-    }
+      } catch (error) {
+        throw new Error(`Error encontrando Productos: ${error.message}`);
+        }
   }
 
   getById = async (pid) => {

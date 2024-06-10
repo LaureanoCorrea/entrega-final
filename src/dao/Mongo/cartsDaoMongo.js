@@ -6,11 +6,13 @@ class CartDaoMongo {
   }
 
   async get() {
-    return await this.cartsModel.find({});
+    return await this.cartsModel.find({ isActive: true });
   }
 
   async getById(cid, lean = false) {
-    return lean ? await this.cartsModel.findById(cid).lean() : await this.cartsModel.findById(cid);
+    return lean 
+      ? await this.cartsModel.findOne({ _id: cid, isActive: true }).lean()
+      : await this.cartsModel.findOne({ _id: cid, isActive: true });
   }
 
   async create({ userEmail }) {
@@ -60,7 +62,11 @@ class CartDaoMongo {
   }
 
   async deleteCart(cid) {
-    return await this.cartsModel.findByIdAndDelete(cid);
+    return await this.cartsModel.findByIdAndUpdate(
+      cid,
+      { $set: { isActive: false } },
+      { new: true }
+    );
   }
   
 }

@@ -32,10 +32,6 @@ const productSchema = new Schema(
 			type: Number,
 			required: true,
 		},
-		status: {
-			type: Boolean,
-			default: true,
-		},
 		category: {
 			type: String,
 		},
@@ -43,6 +39,7 @@ const productSchema = new Schema(
 			type: String,
 			default: 'admin',
 		},
+		isActive: { type: Boolean, default: true },
 	},
 	{
 		timestamps: true,

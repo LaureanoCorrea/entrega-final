@@ -21,7 +21,8 @@ router.use('/', viewsRouter)
 
 router.get('*', (req,res) =>{
     res.render('404', {
-        style: 'index.css'
+        style: 'index.css',
+        hideHeader: true,
     })
 })
 
