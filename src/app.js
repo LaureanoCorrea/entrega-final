@@ -13,6 +13,8 @@ import passport from "passport";
 import initializePassport from "./config/passport.config.js";
 import errorHandler from "./middleware/errors/index.js";
 import { addLogger, logger } from "./utils/logger.js";
+import swaggerUiExpress from 'swagger-ui-express';
+import swaggerJsdoc from 'swagger-jsdoc';
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -46,6 +48,21 @@ app.use("/", viewsRouter);
 app.post("/upload", uploader.single("myFile"), (req, res) => {
   res.send("imagen subida");
 });
+
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.1',
+    info: {
+      title: 'API Documentation',
+      description: 'Documentación de la API de mi aplicación',
+    },
+  },
+  apis: [`${__dirname}/docs/**/*.yaml`],
+};
+
+const specs = swaggerJsdoc(swaggerOptions)
+
+app.use('/apidocs', swaggerUiExpress.serve, swaggerUiExpress.setup(specs));
 
 app.use(appRouter);
 app.use(errorHandler);
