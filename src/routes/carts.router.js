@@ -5,7 +5,7 @@ import CartController from "../controllers/carts.controller.js";
 const cartsRouter = Router();
 const cartController = new CartController();
 
-cartsRouter.post("/",  cartController.createCart.bind(cartController));
+cartsRouter.post("/",  passportCall(['jwt']), cartController.createCart.bind(cartController));
 
 cartsRouter.post("/add", passportCall(['jwt', 'github']),  cartController.add.bind(cartController));
 

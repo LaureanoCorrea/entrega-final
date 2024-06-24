@@ -1,61 +1,68 @@
-<html lang='en'>
-	<head>
-		<meta charset='UTF-8' />
-		<meta name='viewport' content='width=device-width, initial-scale=1.0' />
-		<title>{{title}}</title>
-		<link rel='stylesheet' type='text/css' href='/css/{{style}}' />
-		<script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
-		<script src='/socket.io/socket.io.js'></script>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{title}}</title>
+    <link rel="stylesheet" type="text/css" href="/css/{{style}}" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/socket.io/socket.io.js"></script>
 
-		<link
-			rel='stylesheet'
-			href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css'
-		/>
-		<link
-			rel='stylesheet'
-			href='https://cdn.jsdelivr.net/npm/sweetalert2@11.10.2/dist/sweetalert2.min.css'
-		/>
-	</head>
-	<body>
-		{{#unless hideHeader}}
-			<header>
-				<div>
-					<div class='button-container'>
-						<div class='pannel'>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.2/dist/sweetalert2.min.css"
+    />
+  </head>
+  <body>
+    {{#unless hideHeader}}
+      {{#unless isAuthenticated}}
+        <div class="auth-required-message">
+          <p class="auth-required-text">Debes iniciar sesión para poder comprar
+            productos.</p>
+          <a href="/login" class="button -btnMin auth-required-button">Iniciar
+            sesión</a>
+        </div>
+      {{else}}
+        <header>
+          <div>
+            <div class="button-container">
+              <div class="pannel">
+                <div>
+                  <h1>Bienvenido, {{username}}!</h1>
+                  <h3>Tu rol: {{role}}</h3>
+                </div>
+                {{#eq role "admin"}}
+                  <a href="/realtimeproducts" class="button -btnMin">Real-Time
+                    Products</a>
+                  <a href="/changeRole" class="button -btnMin">Change Role</a>
+                {{else}}
+                  {{#eq role "premium"}}
+                    <a href="/cart" class="button -btnMin">
+                      <i class="fas fa-shopping-cart cart-icon"></i>
+                    </a>
+                    <a href="/products" class="button -btnMin">Productos</a>
+                    <a href="/realtimeproducts" class="button -btnMin">Real-Time
+                      Products</a>
+                  {{else}}
+                    <a href="/chat" class="button -btnMin chat-button">Chat</a>
+                    <a href="/products" class="button -btnMin">Productos</a>
+                    <a href="/cart" class="button -btnMin">
+                      <i class="fas fa-shopping-cart cart-icon"></i>
+                    </a>
+                  {{/eq}}
+                {{/eq}}
+                <a href="/api/sessions/logout" class="button -btnMin">Logout</a>
+              </div>
+            </div>
+          </div>
+        </header>
+      {{/unless}}
+    {{/unless}}
+	
+    {{{body}}}
 
-							<div>
-								<h1>Bienvenido, {{username}}!</h1>
-								<h3>Tu rol: {{role}}</h3>
-							</div>
-							{{#eq role 'admin'}}
-								<a href='/realtimeproducts' class='button - btnMin'>Real-Time
-									Products</a>
-								<a href='/changerole' class='button - btnMin'>Change Role</a>
-							{{else}}
-								{{#eq role 'premium'}}
-									<a href='/cart' class='button - btnMin'>
-										<i class='fas fa-shopping-cart cart-icon'></i>
-									</a>
-									<a href='/products' class='button - btnMin'>Productos</a>
-									<a href='/realtimeproducts' class='button - btnMin'>Real-Time
-										Products</a>
-								{{else}}
-									<a href='/chat' class='button - btnMin chat-button'>Chat</a>
-									<a href='/products' class='button - btnMin'>Productos</a>
-									<a href='/cart' class='button - btnMin'>
-										<i class='fas fa-shopping-cart cart-icon'></i>
-									</a>
-								{{/eq}}
-							{{/eq}}
-							<a href='/api/sessions/logout' class='button - btnMin'>Logout</a>
-
-						</div>
-					</div>
-				</div>
-			</header>
-		{{/unless}}
-
-		{{{body}}}
-
-	</body>
+  </body>
 </html>

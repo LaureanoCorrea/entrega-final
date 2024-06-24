@@ -1,265 +1,297 @@
-import CurrentDTO from '../dto/currentDTO.js';
-import { logger } from '../utils/logger.js';
+import CurrentDTO from "../dto/currentDTO.js";
+import { logger } from "../utils/logger.js";
 import {
-	cartService,
-	productService,
-	userService,
-	orderService,
-} from '../repositories/index.js';
+  cartService,
+  productService,
+  userService,
+  orderService,
+} from "../repositories/index.js";
 
 class ViewController {
-	constructor() {
-		this.userService = userService;
-		this.cartService = cartService;
-		this.productService = productService;
-		this.orderService = orderService;
-	}
+  constructor() {
+    this.userService = userService;
+    this.cartService = cartService;
+    this.productService = productService;
+    this.orderService = orderService;
+  }
 
-	login = (req, res) => {
-		res.render('login', {
-			hideHeader: true,
-			style: 'index.css',
-		});
-	};
+  login = (req, res) => {
+    res.render("login", {
+      hideHeader: true,
+      style: "index.css",
+    });
+  };
 
-	register = (req, res) => {
-		res.render('register', {
-			hideHeader: true,
-			style: 'index.css',
-		});
-	};
+  register = (req, res) => {
+    res.render("register", {
+      hideHeader: true,
+      style: "index.css",
+    });
+  };
 
-	cart = async (req, res) => {
-		try {
-			const cid = req.user.cart;
-			const cart = await cartService.getById(cid, true);
-			const username = req.user.first_name;
-			const role = req.user.role;
-			res.render('cart', {
-				cid,
-				cart,
-				username,
-				role,
-				style: 'index.css',
-			});
-		} catch (error) {
-			logger.error(error);
-			res.status(500).send('Error interno del servidor');
-		}
-	};
+  cart = async (req, res) => {
+    try {
+      
+      const cid = req.user.cart;
+      const cart = await cartService.getById(cid, true);
+      const username = req.user.first_name;
+      const role = req.user.role;
 
-	products = async (req, res) => {
-		const { limit = 5, page = 1, sort = '', query = '' } = req.query;
+      res.render("cart", {
+        cid,
+        cart,
+        username,
+        role,
+		isAuthenticated: req.isAuthenticated(),
+        style: "index.css",
+      });
+    } catch (error) {
+      logger.error(error);
+      res.status(500).send("Error interno del servidor");
+    }
+  };
 
-		try {
-			const options = {
-				limit: parseInt(limit, 10),
-				page: parseInt(page, 10),
-				sort: sort ? { [sort]: 1 } : {},
-				lean: true,
-			};
+  products = async (req, res) => {
+    const { limit = 5, page = 1, sort = "", query = "" } = req.query;
 
-			const filter = {};
-			if (query) {
-				filter.$text = { $search: query };
-			}
-			filter.isActive = true;
+    try {
+      const options = {
+        limit: parseInt(limit, 10),
+        page: parseInt(page, 10),
+        sort: sort ? { [sort]: 1 } : {},
+        lean: true,
+      };
 
-			const cid = req.user.cart;
-			const cart = await this.cartService.getById(cid, true);
+      const filter = {};
+      if (query) {
+        filter.$text = { $search: query };
+      }
+      filter.isActive = true;
 
-			const {
-				docs,
-				hasPrevPage,
-				hasNextPage,
-				prevPage,
-				nextPage,
-				page: currentPage,
-			} = await this.productService.getProducts(filter, options);
+      let cart = null;
+      let username = null;
+      let role = "";
+      let userId = null;
 
-			const user = req.user;
-			const username = req.user.first_name;
-			const role = user ? user.role : '';
+      if (req.isAuthenticated()) {
+        username = req.user.first_name;
+        role = req.user.role;
+        const cid = req.user.cart;
+        cart = await this.cartService.getById(cid, true);
+        userId = req.user._id;
+      }
 
-			const products = docs.map((doc) => ({
-				_id: doc._id,
-				title: doc.title,
-				description: doc.description,
-				price: doc.price,
-				code: doc.code,
-			}));
+      const {
+        docs,
+        hasPrevPage,
+        hasNextPage,
+        prevPage,
+        nextPage,
+        page: currentPage,
+      } = await this.productService.getProducts(filter, options);
 
-			res.render('products', {
-				username,
-				role,
-				cid,
-				products,
-				hasPrevPage,
-				hasNextPage,
-				prevPage,
-				nextPage,
-				page: currentPage,
-				userId: req.user._id,
-				style: 'index.css',
-			});
-		} catch (error) {
-			logger.error(error);
-			res.status(500).send('Error interno del servidor');
-		}
-	};
+      const products = docs.map((doc) => ({
+        _id: doc._id,
+        title: doc.title,
+        description: doc.description,
+        price: doc.price,
+        code: doc.code,
+      }));
 
-	chat = (req, res) => {
-		const username = req.user.first_name;
-		const role = req.user.role;
-		res.render('chat', {
-			username,
-			role,
-			style: 'index.css',
-		});
-	};
+      const renderData = {
+        username: req.isAuthenticated() ? username : "",
+        role: req.isAuthenticated() ? role : "",
+        cid: cart ? cart._id : "",
+        userId: req.isAuthenticated() ? userId : "",
+        products,
+        hasPrevPage,
+        hasNextPage,
+        prevPage,
+        nextPage,
+        page: currentPage,
+        style: "index.css",
+        isAuthenticated: req.isAuthenticated(),
+        currentRoute: "products",
+      };
 
-	realtimeproducts = async (req, res) => {
-		try {
-			const productsData = await productService.getProducts({});
-			const user = req.user;
-			const username = req.user.first_name;
-			const role = user ? user.role : '';
+      res.render("products", renderData);
+    } catch (error) {
+      logger.error("Error in products controller:", error);
+      res.status(500).send("Error interno del servidor");
+    }
+  };
 
-			const products = productsData.docs.map((product) => ({
-				title: product.title,
-				description: product.description,
-				price: product.price,
-				thumbnail: product.thumbnail,
-				code: product.code,
-				stock: product.stock,
-				status: product.status,
-				category: product.category,
-			}));
-			res.render('realtimeproducts', {
-				username,
-				role,
-				products,
-				style: 'index.css',
-			});
-		} catch (error) {
-			res.json('Error al intentar obtener la lista de productos!');
-			return;
-		}
-	};
+  productDetails = async (req, res) => {
+    const { pid } = req.params;
+    try {
+      const product = await productService.getById(pid);
 
-	productDetails = async (req, res) => {
-		const { pid } = req.params;
-		try {
-			const product = await productService.getById(pid);
+      let username = "";
+      let role = "";
+      let cid = "";
+      let userId = "";
 
-			const user = req.user;
-			const username = req.user.first_name;
-			const role = user ? user.role : '';
-			const cid = req.user.cart;
+      if (req.isAuthenticated()) {
+        username = req.user.first_name;
+        role = req.user.role;
+        cid = req.user.cart;
+        userId = req.user._id;
+      }
 
-			res.render('productDetails', {
-				username,
-				role,
-				cid,
-				userId: req.user.id,
-				product,
-				style: 'index.css',
-			});
-		} catch (error) {
-			logger.error(error);
-			res.json('Error al intentar obtener el producto!');
-			return;
-		}
-	};
+      const renderData = {
+        username: req.isAuthenticated() ? username : "",
+        role: req.isAuthenticated() ? role : "",
+        cid,
+        userId: req.isAuthenticated() ? userId : "",
+        product,
+        style: "index.css",
+        isAuthenticated: req.isAuthenticated(),
+        currentRoute: "productDetails",
+      };
 
-	current = async (req, res) => {
-		try {
-			const { first_name, last_name } = req.user;
-			const currentDTO = new CurrentDTO({ first_name, last_name });
-			res.send(currentDTO);
-		} catch (error) {
-			logger.error(error);
-			res.status(500).send('Error interno del servidor');
-		}
-	};
+      console.log("Render Data:", renderData);
 
-	ticket = async (req, res) => {
-		try {
-			const oid = req.params.oid;
-			const username = req.user.first_name;
-			const role = req.user.role;
-			const order = await orderService.getOrderById(oid);
+      res.render("productDetails", renderData);
+    } catch (error) {
+      logger.error("Error in productDetails controller:", error);
+      res.status(500).json("Error al intentar obtener el producto!");
+    }
+  };
 
-			if (!order) {
-				return res.status(404).send('Orden no encontrada');
-			}
+  chat = (req, res) => {
+    if (!req.isAuthenticated()) {
+      return res.redirect('/login');
+    }
 
-			const productsWithTitles = await Promise.all(
-				order.products.map(async (product) => {
-					const productInfo = await productService.getById(product.product);
-					return {
-						title: productInfo.title,
-						quantity: product.quantity,
-					};
-				})
-			);
+    const username = req.user.first_name;
+    const role = req.user.role;
+    res.render("chat", {
+      username,
+      role,
+      style: "index.css",
+    });
+  };
 
-			res.render('ticket', {
-				username,
-				role,
-				order: {
-					_id: order._id,
-					createdAt: order.createdAt,
-					total: order.total,
-					products: productsWithTitles,
-				},
-				style: 'index.css',
-			});
-		} catch (error) {
-			logger.error(error);
-			res.status(500).send('Error interno del servidor');
-		}
-	};
+  realtimeproducts = async (req, res) => {
+    try {
+      const productsData = await productService.getProducts({});
+      const user = req.user;
+      const username = req.isAuthenticated() ? req.user.first_name : "";
+      const role = user ? user.role : "";
 
-	forgotPassword = (req, res) => {
-		res.render('forgotPassword', {
-			style: 'index.css',
-		});
-	};
+      const products = productsData.docs.map((product) => ({
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        thumbnail: product.thumbnail,
+        code: product.code,
+        stock: product.stock,
+        status: product.status,
+        category: product.category,
+      }));
+      res.render("realtimeproducts", {
+        username: req.isAuthenticated() ? username : "",
+        role: req.isAuthenticated() ? role : "",
+        products,
+		isAuthenticated: req.isAuthenticated(),
+        style: "index.css",
+      });
+    } catch (error) {
+      res.json("Error al intentar obtener la lista de productos!");
+      return;
+    }
+  };
 
-	expiredResetLink = (req, res) => {
-		res.render('expiredResetLink');
-	};
+  current = async (req, res) => {
+    try {
+      const { first_name, last_name } = req.user;
+      const currentDTO = new CurrentDTO({ first_name, last_name });
+      res.send(currentDTO);
+    } catch (error) {
+      logger.error(error);
+      res.status(500).send("Error interno del servidor");
+    }
+  };
 
-	changeRole = async (req, res) => {
-		try {
-			const users = await this.userService.getUsers();
-			const usersPlain = users.map((user) =>
-				user.toObject ? user.toObject() : user
-			); // Convertir a objetos planos si es necesario
-			const username = req.user.first_name;
-			const role = req.user.role;
-			res.render('changeRole', {
-				users: usersPlain,
-				username,
-				role,
-				style: 'index.css',
-			});
-		} catch (error) {
-			logger.error(error);
-			res.status(500).send('Error interno del servidor');
-		}
-	};
+  ticket = async (req, res) => {
+    try {
+      const oid = req.params.oid;
+      const username = req.user.first_name;
+      const role = req.user.role;
+      const order = await orderService.getOrderById(oid);
 
-	loggerTest = (req, res) => {
-		req.logger.debug('Este es un mensaje de debug');
-		req.logger.http('Este es un mensaje http');
-		req.logger.info('Este es un mensaje de info');
-		req.logger.warning('Este es un mensaje de warning');
-		req.logger.error('Este es un mensaje de error');
-		req.logger.fatal('Este es un mensaje de fatal');
+      if (!order) {
+        return res.status(404).send("Orden no encontrada");
+      }
 
-		res.send('Prueba de logger completada');
-	};
+      const productsWithTitles = await Promise.all(
+        order.products.map(async (product) => {
+          const productInfo = await productService.getById(product.product);
+          return {
+            title: productInfo.title,
+            quantity: product.quantity,
+          };
+        })
+      );
+
+      res.render("ticket", {
+        username,
+        role,
+        order: {
+          _id: order._id,
+          createdAt: order.createdAt,
+          total: order.total,
+          products: productsWithTitles,
+        },
+        hideHeader: true, // Opcional: si quieres ocultar la cabecera en la vista del ticket
+        style: "index.css",
+      });
+    } catch (error) {
+      logger.error(error);
+      res.status(500).send("Error interno del servidor");
+    }
+  };
+
+  forgotPassword = (req, res) => {
+    res.render("forgotPassword", {
+      style: "index.css",
+    });
+  };
+
+  expiredResetLink = (req, res) => {
+    res.render("expiredResetLink");
+  };
+
+  changeRole = async (req, res) => {
+    try {
+      const users = await this.userService.getUsers();
+      const usersPlain = users.map((user) =>
+        user.toObject ? user.toObject() : user
+      ); // Convertir a objetos planos si es necesario
+      const username = req.user.first_name;
+      const role = req.user.role;
+      res.render("changeRole", {
+        users: usersPlain,
+        username,
+        role,
+        style: "index.css",
+      });
+    } catch (error) {
+      logger.error(error);
+      res.status(500).send("Error interno del servidor");
+    }
+  };
+
+  loggerTest = (req, res) => {
+    req.logger.debug("Este es un mensaje de debug");
+    req.logger.http("Este es un mensaje http");
+    req.logger.info("Este es un mensaje de info");
+    req.logger.warning("Este es un mensaje de warning");
+    req.logger.error("Este es un mensaje de error");
+    req.logger.fatal("Este es un mensaje de fatal");
+
+    res.send("Prueba de logger completada");
+  };
 }
+
 export default ViewController;

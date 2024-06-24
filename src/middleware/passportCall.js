@@ -18,3 +18,15 @@ export const passportCall = (strategy) => {
     })(req, res, next);
   };
 };
+
+export const optionalPassportCall = (strategy) => (req, res, next) => {
+  passport.authenticate(strategy, { session: false }, (err, user, info) => {
+    if (err) {
+      return next(err);
+    }
+    if (user) {
+      req.user = user;
+    }
+    next();
+  })(req, res, next);
+};

@@ -600,3 +600,28 @@ button[type='submit']:hover {
 .swal2-popup {
 	font-size: 16px;
 }
+
+.auth-required-message {
+	text-align: center;
+	margin-top: 20px; /* Ajusta el margen según sea necesario */
+  }
+  
+  .auth-required-text {
+	font-size: 1.2em; /* Tamaño de fuente más grande */
+	color: #333; /* Color de texto */
+	margin-bottom: 10px; /* Espacio inferior */
+  }
+  
+  .auth-required-button {
+	display: inline-block;
+	padding: 10px 20px;
+	background-color: #007bff; /* Color de fondo del botón */
+	color: #fff; /* Color del texto del botón */
+	text-decoration: none;
+	border-radius: 5px;
+  }
+  
+  .auth-required-button:hover {
+	background-color: #0056b3; /* Cambio de color al pasar el ratón sobre el botón */
+  }
+  
